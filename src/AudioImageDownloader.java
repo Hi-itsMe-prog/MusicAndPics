@@ -17,15 +17,13 @@ public class AudioImageDownloader {
 
     public static void main(String[] args) {
         try {
-            // Создаем директории для загрузок
+
             Files.createDirectories(Paths.get(PICTURES_DIR));
             Files.createDirectories(Paths.get(MUSIC_DIR));;
 
-            // Загружаем музыку
             System.out.println("Загрузка музыки...");
             downloadFromFile(MUSIC_URLS_FILE, MUSIC_DIR, "audio", ".mp3");
 
-            // Загружаем картинки
             System.out.println("Загрузка картинок...");
             downloadFromFile(PIC_URLS_FILE, PICTURES_DIR, "image", ".jpg");
 
