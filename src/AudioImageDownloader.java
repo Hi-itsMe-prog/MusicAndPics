@@ -7,8 +7,8 @@ import java.util.concurrent.*;
 
 public class AudioImageDownloader {
 
-    private static final String PIC_URLS_FILE = "urls_pic.txt";
-    private static final String MUSIC_URLS_FILE = "urls_mus.txt";
+    private static final String PIC_URLS_FILE = "images.txt";
+    private static final String MUSIC_URLS_FILE = "audio.txt";
 
     private static final String PICTURES_DIR = "pictures/";
     private static final String MUSIC_DIR = "music/";
@@ -19,22 +19,20 @@ public class AudioImageDownloader {
         try {
             // Создаем директории для загрузок
             Files.createDirectories(Paths.get(PICTURES_DIR));
-            Files.createDirectories(Paths.get(MUSIC_DIR));
-
-            System.out.println("=== Начинаем загрузку ===");
+            Files.createDirectories(Paths.get(MUSIC_DIR));;
 
             // Загружаем музыку
-            System.out.println("\n🎵 Загрузка музыки...");
+            System.out.println("Загрузка музыки...");
             downloadFromFile(MUSIC_URLS_FILE, MUSIC_DIR, "audio", ".mp3");
 
             // Загружаем картинки
-            System.out.println("\n🖼️ Загрузка картинок...");
+            System.out.println("Загрузка картинок...");
             downloadFromFile(PIC_URLS_FILE, PICTURES_DIR, "image", ".jpg");
 
-            System.out.println("\n✅ Все загрузки завершены!");
+            System.out.println("Все загрузки завершены!");
 
         } catch (IOException e) {
-            System.err.println("❌ Критическая ошибка: " + e.getMessage());
+            System.err.println("Критическая ошибка: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -55,25 +53,24 @@ public class AudioImageDownloader {
                 if (urlLine.trim().isEmpty()) continue;
 
                 final String currentUrl = urlLine.trim();
-                final String extension = getFileExtension(currentUrl, defaultExtension);
-                final String filePath = downloadDir + filePrefix + "_" + (fileCount + 1) + extension;
+
+                final String filePath = downloadDir + filePrefix + "_" + (fileCount + 1);
                 final int currentNumber = fileCount + 1;
 
-                // Запускаем загрузку в отдельном потоке
                 Future<?> future = executor.submit(() -> {
                     try {
-                        System.out.println("📥 Начинаем загрузку [" + currentNumber + "]: " + currentUrl);
+                        System.out.println("Начинаем загрузку [" + currentNumber + "]: " + currentUrl);
                         downloadFile(currentUrl, filePath);
-                        System.out.println("✅ Успешно загружено: " + filePath);
+                        System.out.println("Успешно загружено: " + filePath);
                     } catch (IOException e) {
-                        System.err.println("❌ Ошибка загрузки [" + currentNumber + "]: " + e.getMessage());
+                        System.err.println("Ошибка загрузки [" + currentNumber + "]: " + e.getMessage());
                     }
                 });
 
                 futures.add(future);
                 fileCount++;
 
-                // Небольшая пауза между созданием задач
+
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -81,7 +78,7 @@ public class AudioImageDownloader {
                 }
             }
 
-            // Ждем завершения всех задач
+
             for (Future<?> future : futures) {
                 try {
                     future.get();
@@ -93,18 +90,17 @@ public class AudioImageDownloader {
                 }
             }
 
-            System.out.println("📊 Обработано ссылок: " + fileCount);
+            System.out.println("Обработано ссылок: " + fileCount);
 
         } catch (FileNotFoundException e) {
-            System.err.println("❌ Файл не найден: " + urlListFile);
+            System.err.println("Файл не найден: " + urlListFile);
         } catch (IOException e) {
-            System.err.println("❌ Ошибка чтения файла: " + e.getMessage());
+            System.err.println("Ошибка чтения файла: " + e.getMessage());
         } finally {
-            // Корректное завершение пула потоков
             executor.shutdown();
             try {
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                    System.err.println("⚠️ Принудительное завершение потоков...");
+                    System.err.println("Принудительное завершение потоков...");
                     executor.shutdownNow();
                 }
             } catch (InterruptedException e) {
@@ -131,18 +127,5 @@ public class AudioImageDownloader {
         }
     }
 
-    private static String getFileExtension(String url, String defaultExtension) {
-        if (url.contains(".")) {
-            // Убираем параметры запроса
-            String cleanUrl = url.split("\\?")[0];
-            String extension = cleanUrl.substring(cleanUrl.lastIndexOf(".")).toLowerCase();
 
-            // Проверяем, что расширение допустимое
-            if (extension.matches("\\.(jpg|jpeg|png|gif|bmp|webp|mp3|wav|flac|ogg|aac)")) {
-                if (extension.equals(".jpeg")) return ".jpg";
-                return extension;
-            }
-        }
-        return defaultExtension;
-    }
 }
